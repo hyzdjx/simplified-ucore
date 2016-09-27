@@ -1,0 +1,25 @@
+mksfs.c:33:0: 警告：“static_assert”重定义
+ #define static_assert(x)                                                                \
+ 
+In file included from mksfs.c:13:0:
+/usr/include/assert.h:117:0: 附注：这是先前定义的位置
+ # define static_assert _Static_assert
+ 
+记录了2400+0 的读入
+记录了2400+0 的写出
+1228800 bytes (1.2 MB, 1.2 MiB) copied, 0.00492633 s, 249 MB/s
+sched.c: In function 'try_to_wakeup':
+sched.c:184:16: warning: assignment makes pointer from integer without a cast [enabled by default]
+   while ((next = next_thread(next)) != proc) {
+                ^
+init.c: In function 'kern_init':
+init.c:28:12: warning: initialization makes pointer from integer without a cast [enabled by default]
+  char *p = 0x7ffff000;
+            ^
+syscall.c:347:5: warning: initialization from incompatible pointer type [enabled by default]
+     [SYS_redraw_console]    sys_redraw_console,
+     ^
+syscall.c:347:5: warning: (near initialization for 'syscalls[242]') [enabled by default]
+arch/mips/bootasm.S:24:21: warning: backslash and newline separated by space [enabled by default]
+   sll  $t7, $t7, 1; \ 
+ ^
