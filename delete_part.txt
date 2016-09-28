@@ -1,0 +1,5 @@
+tlb 板子相关
+mp、slab、vma、swap、ide ×
+intrd ?
+仅保留mips部分代码
+尽量简化系统

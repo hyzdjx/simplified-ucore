@@ -218,14 +218,10 @@ void schedule(void)
         	}
         	next->runs ++;
         	if (next != current) {
-            		//kprintf("########################\n");
-            		//kprintf("c %d TO %d\n", current->pid, next->pid);
-           		//print_trapframe(next->tf);
-            		//kprintf("@@@@@@@@@@@@@@@@@@@@@@@@\n");
             		proc_run(next);
         	}
-    	}
-    	local_intr_restore(intr_flag);
+    }
+	local_intr_restore(intr_flag);
 }
 
 void add_timer(timer_t * timer)
