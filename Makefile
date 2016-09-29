@@ -1,15 +1,12 @@
 #--------------------------------------------------------------
-# Just run 'make menuconfig', configure stuff, then run 'make'.
-# You shouldn't need to mess with anything beyond this point...
+# Just run 'make'. If you want to change the config, please
+# alter files in config directory.
 #--------------------------------------------------------------
-ON_FPGA := n
-ARCH := mips
-CROSS_COMPILE := mips-sde-elf-
-UCONFIG_HAVE_SFS := y
-UCONFIG_SFS_IMAGE_SIZE := 4
 
 TOPDIR=$(shell pwd)
 Q :=@
+
+UCONFIG_PATH = $(TOPDIR)/config
 
 KTREE = $(TOPDIR)/src/kern-ucore
 ifndef O
@@ -19,15 +16,8 @@ OBJPATH_ROOT := $(abspath $(O))
 endif
 export TOPDIR KTREE OBJPATH_ROOT
 
-CONFIG = package/config
-CONFIG_SCRIPT = $(OBJPATH_ROOT)/.config
-DEFCONFIG_SCRIPT = $(OBJPATH_ROOT)/.defconfig
-export KCONFIG_CONFIG=$(CONFIG_SCRIPT)
-CONFIG_DIR := $(OBJPATH_ROOT)/config
-KCONFIG_AUTOCONFIG=$(CONFIG_DIR)/auto.conf
-KCONFIG_AUTOHEADER=$(CONFIG_DIR)/autoconf.h
-CONFIG_CONFIG_IN = $(KTREE)/arch/$(ARCH)/Kconfig
-CONFIG_DEFCONFIG = $(KTREE)/arch/$(ARCH)/configs/$(BOARD)_defconfig
+KCONFIG_AUTOCONFIG=$(UCONFIG_PATH)/auto.conf
+KCONFIG_AUTOHEADER=$(UCONFIG_PATH)/autoconf.h
 #User Path
 USER_OBJ_ROOT := $(OBJPATH_ROOT)/user-ucore
 BIN := $(USER_OBJ_ROOT)/bin
@@ -101,38 +91,10 @@ export HOSTAR HOSTAS HOSTCC HOSTCXX HOSTLD
 HOSTCFLAGS=$(CFLAGS_FOR_BUILD)
 export HOSTCFLAGS
 
-PHONY+=defconfig menuconfig clean all sfsimg
+PHONY+= clean all sfsimg
 
 PHONY+= $(OBJPATH_ROOT) $(KCONFIG_AUTOHEADER) $(KCONFIG_AUTOCONFIG)
-all: defconfig sfsimg kernel
-
-$(CONFIG_SCRIPT): $(DEFCONFIG_SCRIPT) | $(CONFIG_DIR)
-	@cp $(CONFIG_DEFCONFIG) $(CONFIG_SCRIPT);
-
-$(DEFCONFIG_SCRIPT): | $(CONFIG_DIR)
-	@if [ -e $(CONFIG_DEFCONFIG) ]; then \
-		cp $(CONFIG_DEFCONFIG) $(DEFCONFIG_SCRIPT); \
-	else \
-		echo No defconfig found for ARCH \"$(ARCH)\" and BOARD \"$(BOARD)\"!; \
-		exit 1; \
-	fi
-
-defconfig: $(DEFCONFIG_SCRIPT) $(CONFIG)/conf | $(CONFIG_DIR)
-	@rm -f $(KCONFIG_AUTOCONFIG) $(KCONFIG_AUTOHEADER)
-	@cp $(DEFCONFIG_SCRIPT) $(CONFIG_SCRIPT)
-	@$(CONFIG)/conf -D $(CONFIG_SCRIPT) $(CONFIG_CONFIG_IN)
-
-$(CONFIG)/conf:
-	$(MAKE) CC="$(HOSTCC)" -C $(CONFIG) conf
-
-$(CONFIG)/mconf:
-	$(MAKE) CC="$(HOSTCC)" -C $(CONFIG) mconf
-
-menuconfig: $(CONFIG_DIR) $(CONFIG)/mconf $(CONFIG_SCRIPT)
-	rm -f $(KCONFIG_AUTOCONFIG) $(KCONFIG_AUTOHEADER)
-	@if ! $(CONFIG)/mconf $(CONFIG_CONFIG_IN); then \
-		test -f .config.cmd || rm -f $(CONFIG_SCRIPT); \
-	fi
+all: sfsimg kernel
 
 PHONY += kernel userlib userapp
 
@@ -229,10 +191,8 @@ $(CONFIG_DIR):
 clean:
 	@echo CLEAN ALL
 	$(Q)rm -f cscope.*
-	$(Q)rm -f  $(CONFIG_SCRIPT).old config.cmd .tmpconfig.h
 	$(Q)rm -f $(SFSIMG_FILE)
 	$(Q)rm -rf $(OBJPATH_ROOT)
-	-$(Q)$(MAKE) -C $(CONFIG) clean
 	$(Q)$(MAKE) -C $(KTREE) -f Makefile.build clean
 	$(Q)$(MAKE) -f $(TOPDIR)/src/libs-user-ucore/Makefile -C $(TOPDIR)/src/libs-user-ucore  clean
 	$(Q)$(MAKE) -f $(TOPDIR)/src/user-ucore/Makefile -C $(TOPDIR)/src/user-ucore  clean
