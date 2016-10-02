@@ -147,9 +147,6 @@ pgfault_handler(struct trapframe *tf, uint32_t addr, uint32_t error_code)
 	panic("unhandled page fault.\n");
 #endif
 	extern struct mm_struct *check_mm_struct;
-	if (check_mm_struct != NULL) {	//used for test check_swap
-		//print_pgfault(tf);
-	}
 	struct mm_struct *mm;
 	if (check_mm_struct != NULL) {
 		assert(current == idleproc);

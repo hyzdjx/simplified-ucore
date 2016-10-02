@@ -83,7 +83,6 @@ struct mm_struct {
 	pgd_t *pgdir_alloc_addr;
 #endif
 	int map_count;
-	uintptr_t swap_address;
 	atomic_t mm_count;
 	int locked_by;
 	uintptr_t brk_start, brk;

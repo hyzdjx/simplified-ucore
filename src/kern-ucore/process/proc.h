@@ -79,7 +79,7 @@ struct linux_timespec {
 //the wait state
 #define WT_CHILD                    (0x00000001 | WT_INTERRUPTED)	// wait child process
 #define WT_TIMER                    (0x00000002 | WT_INTERRUPTED)	// wait timer
-#define WT_KSWAPD                    0x00000003	// wait kswapd to free page
+// #define WT_KSWAPD                    0x00000003	// wait kswapd to free page
 #define WT_KBD                      (0x00000004 | WT_INTERRUPTED)	// wait the input of keyboard
 #define WT_KSEM                      0x00000100	// wait kernel semaphore
 #define WT_USEM                     (0x00000101 | WT_INTERRUPTED)	// wait user semaphore
@@ -100,7 +100,6 @@ struct linux_timespec {
 extern struct proc_struct *pls_current;
 extern struct proc_struct *pls_idleproc;
 extern struct proc_struct *initproc;
-extern struct proc_struct *kswapd;
 
 void proc_init(void);
 void proc_init_ap(void);

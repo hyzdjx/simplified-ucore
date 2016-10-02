@@ -9,7 +9,7 @@
 #define SECTSIZE            512
 #define PAGE_NSECT          (PGSIZE / SECTSIZE)
 
-#define SWAP_DEV_NO         1
+// #define SWAP_DEV_NO         1
 #define DISK0_DEV_NO        2
 #define MMC0_DEV_NO        3
 

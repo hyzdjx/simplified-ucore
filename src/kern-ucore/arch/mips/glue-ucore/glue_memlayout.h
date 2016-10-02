@@ -44,7 +44,6 @@ typedef uintptr_t pde_t;
 typedef uintptr_t pgd_t;
 typedef uintptr_t pud_t;
 typedef uintptr_t pmd_t;
-typedef pte_t swap_entry_t;
 #define PBASE               KERNBASE
 
 /* *
@@ -58,8 +57,6 @@ struct Page {
 	unsigned int property;	// used in buddy system, stores the order (the X in 2^X) of the continuous memory block
 	int zone_num;		// used in buddy system, the No. of zone which the page belongs to
 	list_entry_t page_link;	// free list link
-//    swap_entry_t index;             // stores a swapped-out page identifier
-	list_entry_t swap_link;	// swap hash link
 };
 
 /* Flags describing the status of a page frame */
@@ -67,7 +64,6 @@ struct Page {
 #define PG_property                 1	// the member 'property' is valid
 #define PG_slab                     2	// page frame is included in a slab
 #define PG_dirty                    3	// the page has been modified
-#define PG_swap                     4	// the page is in the active or inactive page list (and swap hash table)
 #define PG_active                   5	// the page is in the active page list
 
 #define SetPageReserved(page)       set_bit(PG_reserved, &((page)->flags))
@@ -82,9 +78,6 @@ struct Page {
 #define SetPageDirty(page)          set_bit(PG_dirty, &((page)->flags))
 #define ClearPageDirty(page)        clear_bit(PG_dirty, &((page)->flags))
 #define PageDirty(page)             test_bit(PG_dirty, &((page)->flags))
-#define SetPageSwap(page)           set_bit(PG_swap, &((page)->flags))
-#define ClearPageSwap(page)         clear_bit(PG_swap, &((page)->flags))
-#define PageSwap(page)              test_bit(PG_swap, &((page)->flags))
 #define SetPageActive(page)         set_bit(PG_active, &((page)->flags))
 #define ClearPageActive(page)       clear_bit(PG_active, &((page)->flags))
 #define PageActive(page)            test_bit(PG_active, &((page)->flags))

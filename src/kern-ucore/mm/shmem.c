@@ -4,7 +4,6 @@
 #include <sync.h>
 #include <pmm.h>
 #include <string.h>
-#include <swap.h>
 #include <error.h>
 #include <sem.h>
 
@@ -47,30 +46,12 @@ static inline void shmem_remove_entry_pte(pte_t * ptep)
 	assert(ptep != NULL);
 	if (ptep_present(ptep)) {
 		struct Page *page = pte2page(*ptep);
-#ifdef UCONFIG_SWAP
-		if (!PageSwap(page)) {
-			if (page_ref_dec(page) == 0) {
-				free_page(page);
-			}
-		} else {
-			if (ptep_dirty(ptep)) {
-				SetPageDirty(page);
-			}
-			page_ref_dec(page);
-		}
-#else
 		if (page_ref_dec(page) == 0) {
 			free_page(page);
 		}
-#endif /* UCONFIG_SWAP */
 		ptep_unmap(ptep);
 	} else if (!ptep_invalid(ptep)) {
-#ifdef UCONFIG_SWAP
-		swap_remove_entry(*ptep);
-		ptep_unmap(ptep);
-#else
 		assert(0);
-#endif
 	}
 }
 
@@ -185,11 +166,7 @@ int shmem_insert_entry(struct shmem_struct *shmem, uintptr_t addr, pte_t entry)
 	if (ptep_present(&entry)) {
 		page_ref_inc(pte2page(entry));
 	} else if (!ptep_invalid(&entry)) {
-#ifdef UCONFIG_SWAP
-		swap_duplicate(entry);
-#else
 		assert(0);
-#endif
 	}
 	ptep_copy(ptep, &entry);
 	return 0;

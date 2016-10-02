@@ -17,7 +17,6 @@
 #include <fs.h>
 #include <vfs.h>
 #include <sysfile.h>
-#include <swap.h>
 #include <mbox.h>
 #include <kio.h>
 #include <stdio.h>
@@ -75,7 +74,6 @@ SYS_getpid      : get the process's pid
 PLS struct proc_struct *pls_current;
 PLS struct proc_struct *pls_idleproc;
 struct proc_struct *initproc;
-struct proc_struct *kswapd;
 
 #define current (pls_read(current))
 #define idleproc (pls_read(idleproc))
@@ -2008,30 +2006,12 @@ static int init_main(void *arg)
 		}
 		schedule();
 	}
-#ifdef UCONFIG_SWAP
-	assert(kswapd != NULL);
-	int i;
-	for (i = 0; i < 10; i++) {
-		if (kswapd->wait_state == WT_TIMER) {
-			wakeup_proc(kswapd);
-		}
-		schedule();
-	}
-#endif
 
 	mbox_cleanup();
 	fs_cleanup();
 
 	kprintf("all user-mode processes have quit.\n");
-#ifdef UCONFIG_SWAP
-	assert(initproc->cptr == kswapd && initproc->yptr == NULL
-	       && initproc->optr == NULL);
-	assert(kswapd->cptr == NULL && kswapd->yptr == NULL
-	       && kswapd->optr == NULL);
-	assert(nr_process == 2 + pls_read(lcpu_count));
-#else
 	assert(nr_process == 1 + pls_read(lcpu_count));
-#endif
 	assert(nr_used_pages_store == nr_used_pages());
 	assert(slab_allocated_store == slab_allocated());
 	kprintf("init check memory pass.\n");

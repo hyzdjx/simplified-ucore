@@ -69,7 +69,6 @@
 #define PMD_ADDR(pmd)   PTE_ADDR(pmd)
 #define PMSIZE			PTSIZE
 #define PUSIZE			PTSIZE
-#define PTE_SWAP        (PTE_A | PTE_D)
 #define PGX(la) PDX(la)
 
 #endif /* !__KERN_MM_MMU_H__ */

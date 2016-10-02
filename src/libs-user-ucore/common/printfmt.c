@@ -55,7 +55,6 @@ static const char *const error_string[MAXERROR + 1] = {
 	[E_PANIC] "Panic Failure",
 	[E_KILLED] "Process is killed",
 	[E_UNSPECIFIED] "Unspecified or unknown problem",
-	[E_SWAP_FAULT] "SWAP READ/WRITE fault",
 };
 
 /* *

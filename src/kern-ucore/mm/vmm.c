@@ -7,7 +7,6 @@
 #include <error.h>
 #include <pmm.h>
 #include <arch.h>
-#include <swap.h>
 #include <shmem.h>
 #include <proc.h>
 #include <sem.h>
@@ -105,7 +104,6 @@ struct mm_struct *mm_create(void)
 		mm->mmap_cache = NULL;
 		mm->pgdir = NULL;
 		mm->map_count = 0;
-		mm->swap_address = 0;
 		set_mm_count(mm, 0);
 		mm->locked_by = 0;
 		mm->brk_start = mm->brk = 0;
@@ -1037,12 +1035,7 @@ int do_pgfault(struct mm_struct *mm, machine_word_t error_code, uintptr_t addr)
 				page_insert(mm->pgdir, pa2page(*sh_ptep), addr,
 					    perm);
 			} else {
-#ifdef UCONFIG_SWAP
-				swap_duplicate(*ptep);
-				ptep_copy(ptep, sh_ptep);
-#else
 				panic("NO SWAP\n");
-#endif
 			}
 		}
 	} else {		//a present page, handle copy-on-write (cow) 
@@ -1067,16 +1060,7 @@ int do_pgfault(struct mm_struct *mm, machine_word_t error_code, uintptr_t addr)
 		if (ptep_present(ptep)) {
 			page = pte2page(*ptep);
 		} else {
-#ifdef UCONFIG_SWAP
-			if ((ret = swap_in_page(*ptep, &page)) != 0) {
-				if (newpage != NULL) {
-					free_page(newpage);
-				}
-				goto failed;
-			}
-#else
 			assert(0);
-#endif
 			if (!(error_code & 2) && cow) {
 #ifdef ARCH_ARM
 #warning ARM9 software emulated PTE_xxx
@@ -1089,11 +1073,7 @@ int do_pgfault(struct mm_struct *mm, machine_word_t error_code, uintptr_t addr)
 		}
 
 		if (cow && may_copy) {
-#ifdef UCONFIG_SWAP
-			if (page_ref(page) + swap_page_count(page) > 1) {
-#else
 			if (page_ref(page) > 1) {
-#endif
 				if (newpage == NULL) {
 					goto failed;
 				}
@@ -1105,11 +1085,7 @@ int do_pgfault(struct mm_struct *mm, machine_word_t error_code, uintptr_t addr)
 		}
 #ifdef UCONFIG_BIONIC_LIBC
 		else if (vma->mfile.file != NULL) {
-#ifdef UCONFIG_SWAP
-			assert(page_reg(page) + swap_page_count(page) == 1);
-#else
 			assert(page_ref(page) == 1);
-#endif
 
 #ifdef SHARE_MAPPED_FILE
 			off_t offset = vma->mfile.offset + addr - vma->vm_start;

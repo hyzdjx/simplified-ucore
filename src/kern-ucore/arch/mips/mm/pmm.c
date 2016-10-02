@@ -243,8 +243,6 @@ static inline void page_remove_pte(pde_t * pgdir, uintptr_t la, pte_t * ptep)
 	tlb_invalidate_all();
 }
 
-extern int swap_init_ok;
-
 static void check_alloc_page(void)
 {
 	pmm_manager->check();

@@ -69,7 +69,6 @@
 #define E_PANIC   36
 #define E_KILLED  37
 #define E_UNSPECIFIED  38
-#define E_SWAP_FAULT   39
 
 #define E_NO_MEM E_NOMEM
 #define E_INVAL_ELF E_NOEXEC

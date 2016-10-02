@@ -2,7 +2,6 @@
 #include <string.h>
 #include <error.h>
 #include <memlayout.h>
-#include <swap.h>
 #include <mp.h>
 
 /**************************************************
@@ -134,24 +133,11 @@ void page_remove_pte(pgd_t * pgdir, uintptr_t la, pte_t * ptep)
 {
 	if (ptep_present(ptep)) {
 		struct Page *page = pte2page(*ptep);
-		if (!PageSwap(page)) {
-			if (page_ref_dec(page) == 0) {
-				//Don't free dma pages
-				if (!PageIO(page))
-					free_page(page);
-			}
-		} else {
-			if (ptep_dirty(ptep)) {
-				SetPageDirty(page);
-			}
-			page_ref_dec(page);
-		}
+		if (page_ref_dec(page) == 0) 
+			free_page(page);
 		ptep_unmap(ptep);
 		mp_tlb_invalidate(pgdir, la);
 	} else if (!ptep_invalid(ptep)) {
-#ifdef UCONFIG_SWAP
-		swap_remove_entry(*ptep);
-#endif
 		ptep_unmap(ptep);
 	}
 }
@@ -417,53 +403,19 @@ copy_range(pgd_t * to, pgd_t * from, uintptr_t start, uintptr_t end, bool share)
 			int ret;
 			//kprintf("%08x %08x %08x\n", nptep, *nptep, start);
 			assert(*ptep != 0 && *nptep == 0);
-#ifdef ARCH_ARM
-			//TODO  add code to handle swap 
-			if (ptep_present(ptep)) {
-				//no body should be able to write this page
-				//before a W-pgfault
-				pte_perm_t perm = PTE_P;
-				if (ptep_u_read(ptep))
-					perm |= PTE_U;
-				if (!share) {
-					//Original page should be set to readonly!
-					//because Copy-on-write may happen
-					//after the current proccess modifies its page
-					ptep_set_perm(ptep, perm);
-				} else {
-					if (ptep_u_write(ptep)) {
-						perm |= PTE_W;
-					}
-				}
-				struct Page *page = pte2page(*ptep);
-				ret = page_insert(to, page, start, perm);
-
-			}
-#else /* ARCH_ARM */
 			if (ptep_present(ptep)) {
 				pte_perm_t perm = ptep_get_perm(ptep, PTE_USER);
 				struct Page *page = pte2page(*ptep);
 				if (!share && ptep_s_write(ptep)) {
 					ptep_unset_s_write(&perm);
-					pte_perm_t perm_with_swap_stat =
-					    ptep_get_perm(ptep, PTE_SWAP);
-					ptep_set_perm(&perm_with_swap_stat,
-						      perm);
 					page_insert(from, page, start,
-						    perm_with_swap_stat);
+						    perm);
 				}
 				ret = page_insert(to, page, start, perm);
 				assert(ret == 0);
 			}
-#endif /* ARCH_ARM */
 			else {
-#ifndef UCONFIG_SWAP
 				assert(0);
-#endif
-				swap_entry_t entry;
-				ptep_copy(&entry, ptep);
-				swap_duplicate(entry);
-				ptep_copy(nptep, &entry);
 			}
 		}
 		start += PGSIZE;
