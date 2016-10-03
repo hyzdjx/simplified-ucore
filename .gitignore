@@ -24,3 +24,4 @@ src/user-ucore/_initial
 # other
 success.txt
 delete_part.txt
+*.backup
