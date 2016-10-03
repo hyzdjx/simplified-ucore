@@ -5,7 +5,6 @@
 #include <assert.h>
 #include <stdio.h>
 #include <error.h>
-#include <slab.h>
 #include <pmm.h>
 #include <thumips_tlb.h>
 

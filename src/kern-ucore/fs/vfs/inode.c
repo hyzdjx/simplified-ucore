@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <atomic.h>
-#include <slab.h>
+#include <pmm.h>
 #include <vfs.h>
 #include <inode.h>
 #include <error.h>

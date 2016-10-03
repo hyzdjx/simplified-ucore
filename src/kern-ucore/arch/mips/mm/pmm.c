@@ -10,6 +10,7 @@
 #include <error.h>
 #include <mips_io.h>
 #include <proc.h>
+#include <list.h>
 
 // virtual address of physicall page array
 struct Page *pages;
@@ -216,11 +217,6 @@ void pmm_init(void)
 
 	memset(boot_pgdir, 0, PGSIZE);
 	print_pgdir();
-	
-/* SZY comments, what's the purpose of allocating space for slab? really store the symbols? */
-	kmalloc_init();
-	//slab_init();
-	//kprintf("kmalloc_init() succeeded!\n");
 }
 
 //page_remove_pte - free an Page sturct which is related linear address la
@@ -460,4 +456,46 @@ void set_pgdir(struct proc_struct *proc, pde_t * pgdir)
 size_t nr_used_pages(void)
 {
 	return 0;
+}
+#define MAX_SIZE 1024 * 1024 * 1024 / PGSIZE
+void *ptrs[MAX_SIZE];
+size_t sizes[MAX_SIZE];
+int index = 0;
+
+void *
+kmalloc(size_t n) {
+    void *ptr=NULL;
+    struct Page *base=NULL;
+	assert(n > 0 && n < 1024*1024);
+    int num_pages=(n+PGSIZE-1)/PGSIZE;
+    base = alloc_pages(num_pages);
+    assert(base != NULL);
+    ptr=page2kva(base);
+	ptrs[index] = ptr;
+	sizes[index] = n;
+	index++;
+	assert(index < MAX_SIZE);
+    return ptr;
+}
+
+void 
+kfree(void *ptr) {
+	size_t n = 0;
+	int i;
+	for(i = 0; i < index; i++){
+		if(ptrs[i] == ptr){
+			ptrs[i] = ptrs[index - 1];
+			index--;
+			n = sizes[i];
+			break;
+		}
+	}
+	if(n > 1024 * 1024 || n <= 0)
+		kprintf("%d %d %d\n",i, index, n);
+    assert(n > 0 && n < 1024*1024);
+    assert(ptr != NULL);
+    struct Page *base=NULL;
+    int num_pages=(n+PGSIZE-1)/PGSIZE;
+    base = kva2page(ptr);
+    free_pages(base, num_pages);
 }

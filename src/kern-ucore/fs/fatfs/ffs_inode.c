@@ -3,7 +3,7 @@
 #include <types.h>
 #include <string.h>
 #include <stdlib.h>
-#include <slab.h>
+#include <pmm.h>
 #include <list.h>
 #include <stat.h>
 #include <vfs.h>

@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <error.h>
 #include <proc.h>
-#include <slab.h>
+#include <pmm.h>
 #include <signal.h>
 #include <string.h>
 #include <vmm.h>

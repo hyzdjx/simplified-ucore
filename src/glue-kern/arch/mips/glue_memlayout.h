@@ -63,7 +63,6 @@ struct Page {
 /* Flags describing the status of a page frame */
 #define PG_reserved                 0	// the page descriptor is reserved for kernel or unusable
 #define PG_property                 1	// the member 'property' is valid
-#define PG_slab                     2	// page frame is included in a slab
 #define PG_dirty                    3	// the page has been modified
 #define PG_active                   5	// the page is in the active page list
 
@@ -73,9 +72,6 @@ struct Page {
 #define SetPageProperty(page)       set_bit(PG_property, &((page)->flags))
 #define ClearPageProperty(page)     clear_bit(PG_property, &((page)->flags))
 #define PageProperty(page)          test_bit(PG_property, &((page)->flags))
-#define SetPageSlab(page)           set_bit(PG_slab, &((page)->flags))
-#define ClearPageSlab(page)         clear_bit(PG_slab, &((page)->flags))
-#define PageSlab(page)              test_bit(PG_slab, &((page)->flags))
 #define SetPageDirty(page)          set_bit(PG_dirty, &((page)->flags))
 #define ClearPageDirty(page)        clear_bit(PG_dirty, &((page)->flags))
 #define PageDirty(page)             test_bit(PG_dirty, &((page)->flags))

@@ -1,5 +1,5 @@
 #include <types.h>
-#include <slab.h>
+#include <pmm.h>
 #include <string.h>
 #include <bitmap.h>
 #include <error.h>

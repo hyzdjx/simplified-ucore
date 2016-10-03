@@ -1,8 +1,7 @@
 #include <types.h>
 #include <shmem.h>
-#include <slab.h>
-#include <sync.h>
 #include <pmm.h>
+#include <sync.h>
 #include <string.h>
 #include <error.h>
 #include <sem.h>

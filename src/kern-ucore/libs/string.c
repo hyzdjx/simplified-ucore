@@ -1,5 +1,5 @@
 #include <string.h>
-#include <slab.h>
+#include <pmm.h>
 
 char *strdup(const char *src)
 {

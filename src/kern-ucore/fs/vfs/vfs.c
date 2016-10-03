@@ -1,7 +1,7 @@
 #include <types.h>
 #include <stdio.h>
 #include <string.h>
-#include <slab.h>
+#include <pmm.h>
 #include <vfs.h>
 #include <inode.h>
 #include <sem.h>

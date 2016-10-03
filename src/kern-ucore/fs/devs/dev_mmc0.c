@@ -1,6 +1,6 @@
 #include <types.h>
 #include <mmu.h>
-#include <slab.h>
+#include <pmm.h>
 #include <sem.h>
 #include <ide.h>
 #include <inode.h>

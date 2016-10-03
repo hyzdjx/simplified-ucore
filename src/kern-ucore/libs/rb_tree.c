@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <slab.h>
+#include <pmm.h>
 #include <rb_tree.h>
 #include <assert.h>
 

@@ -1,7 +1,7 @@
 #include <types.h>
 #include <wait.h>
 #include <atomic.h>
-#include <slab.h>
+#include <pmm.h>
 #include <sem.h>
 #include <vmm.h>
 #include <ipc.h>

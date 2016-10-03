@@ -17,7 +17,7 @@
  */
 
 #include <types.h>
-#include <slab.h>
+#include <pmm.h>
 #include <sem.h>
 
 #include "yaffs_trace.h"

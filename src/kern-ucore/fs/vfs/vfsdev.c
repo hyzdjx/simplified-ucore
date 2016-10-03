@@ -10,7 +10,7 @@
 #include <inode.h>
 #include <sem.h>
 #include <list.h>
-#include <slab.h>
+#include <pmm.h>
 #include <unistd.h>
 #include <error.h>
 #include <assert.h>

@@ -1,5 +1,4 @@
 #include <proc.h>
-#include <slab.h>
 #include <string.h>
 #include <sync.h>
 #include <pmm.h>
@@ -1986,7 +1985,6 @@ static int init_main(void *arg)
 	kprintf("exit vfs_set_bootfs\n");
 #endif
 	size_t nr_used_pages_store = nr_used_pages();
-	size_t slab_allocated_store = slab_allocated();
 
 	unsigned int nr_process_store = nr_process;
 
@@ -2013,7 +2011,6 @@ static int init_main(void *arg)
 	kprintf("all user-mode processes have quit.\n");
 	assert(nr_process == 1 + pls_read(lcpu_count));
 	assert(nr_used_pages_store == nr_used_pages());
-	assert(slab_allocated_store == slab_allocated());
 	kprintf("init check memory pass.\n");
 	return 0;
 }

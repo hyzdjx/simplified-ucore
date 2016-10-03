@@ -1,6 +1,6 @@
 #include <types.h>
 #include <string.h>
-#include <slab.h>
+#include <pmm.h>
 #include <vmm.h>
 #include <proc.h>
 #include <vfs.h>

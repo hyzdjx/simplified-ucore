@@ -1,5 +1,5 @@
 #include <types.h>
-#include <slab.h>
+#include <pmm.h>
 #include <sem.h>
 #include <vfs.h>
 #include <dev.h>

@@ -1,10 +1,9 @@
 #include <types.h>
 #include <mmu.h>
-#include <pmm.h>
 #include <vmm.h>
 #include <ipc.h>
 #include <proc.h>
-#include <slab.h>
+#include <pmm.h>
 #include <sem.h>
 #include <mbox.h>
 #include <mboxbuf.h>

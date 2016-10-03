@@ -161,4 +161,8 @@ static inline struct Page *pgd2page(pgd_t pgd)
 	return pa2page(PGD_ADDR(pgd));
 }
 
+extern void *kmalloc(size_t n);
+extern void kfree(void *ptr);
+extern void kmalloc_init();
+
 #endif /* !__KERN_MM_PMM_H__ */

@@ -1,6 +1,6 @@
 #include <types.h>
 #include <wait.h>
-#include <slab.h>
+#include <pmm.h>
 #include <mmu.h>
 #include <sync.h>
 #include <proc.h>
