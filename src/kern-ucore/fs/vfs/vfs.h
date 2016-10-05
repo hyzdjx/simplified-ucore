@@ -5,7 +5,6 @@
 #include <fs.h>
 #include <pipe.h>
 #include <sfs.h>
-#include <fatfs/ffs.h>
 
 struct inode;			// abstract structure for an on-disk file (inode.h)
 struct device;			// abstract structure for a device (dev.h)
@@ -38,16 +37,10 @@ struct fs {
 	union {
 		struct pipe_fs __pipe_info;
 		struct sfs_fs __sfs_info;
-#ifdef UCONFIG_HAVE_FATFS
-		struct ffs_fs __ffs_info;
-#endif
 	} fs_info;
 	enum {
 		fs_type_pipe_info = 0x5678,
 		fs_type_sfs_info,
-#ifdef UCONFIG_HAVE_FATFS
-		fs_type_ffs_info,
-#endif
 	} fs_type;
 	int (*fs_sync) (struct fs * fs);
 	struct inode *(*fs_get_root) (struct fs * fs);
