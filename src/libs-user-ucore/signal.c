@@ -13,11 +13,6 @@ int tkill(int pid, int sign)
 	return sys_linux_tkill(pid, sign);
 }
 
-int kill_bionic(int pid, int sign)
-{
-	return sys_linux_kill(pid, sign);
-}
-
 int sigprocmask(int how, const sigset_t * set, sigset_t * old)
 {
 	return sys_linux_sigprocmask(how, set, old);

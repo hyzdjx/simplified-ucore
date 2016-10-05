@@ -183,11 +183,6 @@ void proc_run(struct proc_struct *proc)
 			pls_write(current, proc);
 			load_rsp0(next->kstack + KSTACKSIZE);
 			mp_set_mm_pagetable(next->mm);
-
-#ifdef UCONFIG_BIONIC_LIBC
-			// for tls switch
-			tls_switch(next);
-#endif //UCONFIG_BIONIC_LIBC
 			switch_to(&(prev->context), &(next->context));
 		}
 		local_intr_restore(intr_flag);
@@ -336,14 +331,6 @@ static int copy_mm(uint32_t clone_flags, struct proc_struct *proc)
 		ret = dup_mmap(mm, oldmm);
 	}
 	unlock_mm(oldmm);
-
-#ifdef UCONFIG_BIONIC_LIBC
-	lock_mm(mm);
-	{
-		ret = remapfile(mm, proc);
-	}
-	unlock_mm(mm);
-#endif //UCONFIG_BIONIC_LIBC
 
 	if (ret != 0) {
 		goto bad_dup_cleanup_mmap;
@@ -937,74 +924,6 @@ static int load_icode(int fd, int argc, char **kargv, int envc, char **kenvp)
 		if (load_address_flag == 0)
 			load_address = ph->p_va + bias;
 		++load_address_flag;
-
-	  /*********************************************/
-		/*
-		   vm_flags = 0;
-		   ptep_set_u_read(&perm);
-		   if (ph->p_flags & ELF_PF_X) vm_flags |= VM_EXEC;
-		   if (ph->p_flags & ELF_PF_W) vm_flags |= VM_WRITE;
-		   if (ph->p_flags & ELF_PF_R) vm_flags |= VM_READ;
-		   if (vm_flags & VM_WRITE) ptep_set_u_write(&perm);
-
-		   if ((ret = mm_map(mm, ph->p_va, ph->p_memsz, vm_flags, NULL)) != 0) {
-		   goto bad_cleanup_mmap;
-		   }
-
-		   if (mm->brk_start < ph->p_va + ph->p_memsz) {
-		   mm->brk_start = ph->p_va + ph->p_memsz;
-		   }
-
-		   off_t offset = ph->p_offset;
-		   size_t off, size;
-		   uintptr_t start = ph->p_va, end, la = ROUNDDOWN(start, PGSIZE);
-
-		   end = ph->p_va + ph->p_filesz;
-		   while (start < end) {
-		   if ((page = pgdir_alloc_page(mm->pgdir, la, perm)) == NULL) {
-		   ret = -E_NO_MEM;
-		   goto bad_cleanup_mmap;
-		   }
-		   off = start - la, size = PGSIZE - off, la += PGSIZE;
-		   if (end < la) {
-		   size -= la - end;
-		   }
-		   if ((ret = load_icode_read(fd, page2kva(page) + off, size, offset)) != 0) {
-		   goto bad_cleanup_mmap;
-		   }
-		   start += size, offset += size;
-		   }
-
-		   end = ph->p_va + ph->p_memsz;
-
-		   if (start < la) {
-		   // ph->p_memsz == ph->p_filesz 
-		   if (start == end) {
-		   continue ;
-		   }
-		   off = start + PGSIZE - la, size = PGSIZE - off;
-		   if (end < la) {
-		   size -= la - end;
-		   }
-		   memset(page2kva(page) + off, 0, size);
-		   start += size;
-		   assert((end < la && start == end) || (end >= la && start == la));
-		   }
-
-		   while (start < end) {
-		   if ((page = pgdir_alloc_page(mm->pgdir, la, perm)) == NULL) {
-		   ret = -E_NO_MEM;
-		   goto bad_cleanup_mmap;
-		   }
-		   off = start - la, size = PGSIZE - off, la += PGSIZE;
-		   if (end < la) {
-		   size -= la - end;
-		   }
-		   memset(page2kva(page) + off, 0, size);
-		   start += size;
-		   }
-		 */
-	  /**************************************/
 	}
 
 	mm->brk_start = mm->brk = ROUNDUP(mm->brk_start, PGSIZE);
@@ -1105,15 +1024,8 @@ static int load_icode(int fd, int argc, char **kargv, int envc, char **kenvp)
 	if (!is_dynamic) {
 		real_entry += bias;
 	}
-#ifdef UCONFIG_BIONIC_LIBC
-	if (init_new_context_dynamic(current, elf, argc, kargv, envc, kenvp,
-				     is_dynamic, real_entry, load_address,
-				     bias) < 0)
-		goto bad_cleanup_mmap;
-#else
 	if (init_new_context(current, elf, argc, kargv, envc, kenvp) < 0)
 		goto bad_cleanup_mmap;
-#endif //UCONFIG_BIONIC_LIBC
 	ret = 0;
 out:
 	return ret;
@@ -1604,48 +1516,6 @@ out_unlock:
 	return retval;
 }
 
-/* from x86 bionic porting */
-/*
-int
-do_linux_brk(uintptr_t brk) {
-    struct mm_struct *mm = current->mm;
-    if (mm == NULL) {
-        panic("kernel thread call sys_brk!!.\n");
-    }
-
-    if (brk == 0) {
-        return mm->brk_start;
-    }
-
-    lock_mm(mm);
-    if (brk < mm->brk_start) {
-        goto out_unlock;
-    }
-    uintptr_t newbrk = ROUNDUP(brk, PGSIZE), oldbrk = mm->brk;
-    assert(oldbrk % PGSIZE == 0);
-    if (newbrk == oldbrk) {
-        goto out_unlock;
-    }
-    if (newbrk < oldbrk) {
-        if (mm_unmap(mm, newbrk, oldbrk - newbrk) != 0) {
-            goto out_unlock;
-        }
-    }
-    else {
-        if (find_vma_intersection(mm, oldbrk, newbrk + PGSIZE) != NULL) {
-            goto out_unlock;
-        }
-        if (mm_brk(mm, oldbrk, newbrk - oldbrk) != 0) {
-            goto out_unlock;
-        }
-    }
-    mm->brk = newbrk;
-out_unlock:
-    unlock_mm(mm);
-    return newbrk;
-}
-*/
-
 // do_sleep - set current process state to sleep and add timer with "time"
 //          - then call scheduler. if process run again, delete timer first.
 //      time is jiffies
@@ -1807,84 +1677,6 @@ int do_munmap(uintptr_t addr, size_t len)
 	unlock_mm(mm);
 	return ret;
 }
-
-#ifdef UCONFIG_BIONIC_LIBC
-
-int do_mprotect(void *addr, size_t len, int prot)
-{
-
-	/*
-	   return 0; 
-	 */
-
-	struct mm_struct *mm = current->mm;
-	assert(mm != NULL);
-	if (len == 0) {
-		return -E_INVAL;
-	}
-	uintptr_t start = ROUNDDOWN(addr, PGSIZE);
-	uintptr_t end = ROUNDUP(addr + len, PGSIZE);
-
-	int ret = -E_INVAL;
-	lock_mm(mm);
-
-	while (1) {
-		struct vma_struct *vma = find_vma(mm, start);
-		uintptr_t last_end;
-		if (vma != NULL) {
-			last_end = vma->vm_end;
-		}
-		if (vma == NULL) {
-			goto out;
-		} else if (vma->vm_start == start && vma->vm_end == end) {
-			if (prot & PROT_WRITE) {
-				vma->vm_flags |= VM_WRITE;
-			} else {
-				vma->vm_flags &= ~VM_WRITE;
-			}
-		} else {
-			uintptr_t this_end =
-			    (end <= vma->vm_end) ? end : vma->vm_end;
-			uintptr_t this_start =
-			    (start >= vma->vm_start) ? start : vma->vm_start;
-
-			struct mapped_file_struct mfile = vma->mfile;
-			mfile.offset += this_start - vma->vm_start;
-			uint32_t flags = vma->vm_flags;
-			if ((ret =
-			     mm_unmap_keep_pages(mm, this_start,
-						 this_end - this_start)) != 0) {
-				goto out;
-			}
-			if (prot & PROT_WRITE) {
-				flags |= VM_WRITE;
-			} else {
-				flags &= ~VM_WRITE;
-			}
-			if ((ret =
-			     mm_map(mm, this_start, this_end - this_start,
-				    flags, &vma)) != 0) {
-				goto out;
-			}
-			vma->mfile = mfile;
-			if (vma->mfile.file != NULL) {
-				filemap_acquire(mfile.file);
-			}
-		}
-
-		ret = 0;
-
-		if (end <= last_end)
-			break;
-		start = last_end;
-	}
-
-out:
-	unlock_mm(mm);
-	return ret;
-}
-
-#endif //UCONFIG_BIONIC_LIBC
 
 // do_shmem - create a share memory with addr, len, flags(VM_READ/M_WRITE/VM_STACK)
 int do_shmem(uintptr_t * addr_store, size_t len, uint32_t mmap_flags)
