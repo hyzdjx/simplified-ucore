@@ -1251,34 +1251,6 @@ repeat:
                 }
             }
         }
-/*
-	if (pid != 0) {
-		proc = find_proc(pid);
-		if (proc != NULL) {
-			do {
-				if (proc->parent == cproc) {
-					haskid = 1;
-					if (proc->state == PROC_ZOMBIE) {
-						goto found;
-					}
-					break;
-				}
-				cproc = next_thread(cproc);
-			} while (cproc != current);
-		}
-	} else {
-		do {
-			proc = cproc->cptr;
-			for (; proc != NULL; proc = proc->optr) {
-				haskid = 1;
-				if (proc->state == PROC_ZOMBIE) {
-					goto found;
-				}
-			}
-			cproc = next_thread(cproc);
-		} while (cproc != current);
-	}
-*/
 	if (haskid) {
 		current->state = PROC_SLEEPING;
 		current->wait_state = WT_CHILD;

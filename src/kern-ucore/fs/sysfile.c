@@ -410,10 +410,6 @@ int sysfile_getdirentry(int fd, struct dirent *__direntp, uint32_t * len_store)
 	if ((direntp = kmalloc(sizeof(struct dirent))) == NULL) {
 		return -E_NO_MEM;
 	}
-	//memset(direntp, 0, sizeof(struct dirent));
-	//direntp->d_reclen = sizeof(struct dirent);
-	/* libc will ignore entries with d_ino==0 */
-	//direntp->d_ino = 1;
 
 	int ret = 0;
 	lock_mm(mm);

@@ -176,11 +176,7 @@ repeat:
 // NOTE: the addr of forkret is setted in copy_thread function
 //       after switch_to, the current proc will execute here.
 static void forkret(void)
-{				//kprintf(" [forkrets pid=%d epc=%x] ", current->pid, current->tf->tf_epc);
-/*    kprintf("{");
-    int i;
-    for (i = 0; i < 10; ++i) kprintf("%x:%x ", (current->tf->tf_epc + i * 4), *(uint32_t*)(current->tf->tf_epc + i * 4));
-    kprintf("} ");*/
+{				
 	forkrets(current->tf);
 }
 

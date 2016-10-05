@@ -53,8 +53,5 @@ void __noreturn kern_init(void)
 	ide_init();
 	fs_init();
 	intr_enable();		// enable irq interrupt
-	//*(int*)(0x00124) = 0x432;
-	//asm volatile("divu $1, $1, $1");
-//*p = 1;
 	cpu_idle();
 }

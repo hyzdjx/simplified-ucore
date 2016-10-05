@@ -746,19 +746,11 @@ int do_pgfault(struct mm_struct *mm, machine_word_t error_code, uintptr_t addr)
 	}
 
 	pte_perm_t perm, nperm;
-#ifdef ARCH_ARM
-#warning ARM9 software emulated PTE_xxx
-	perm = PTE_P | PTE_U;
-	if (vma->vm_flags & VM_WRITE) {
-		perm |= PTE_W;
-	}
-#else
 	ptep_unmap(&perm);
 	ptep_set_u_read(&perm);
 	if (vma->vm_flags & VM_WRITE) {
 		ptep_set_u_write(&perm);
 	}
-#endif
 	addr = ROUNDDOWN(addr, PGSIZE);
 
 	ret = -E_NO_MEM;
@@ -814,12 +806,7 @@ int do_pgfault(struct mm_struct *mm, machine_word_t error_code, uintptr_t addr)
 		} else {
 			assert(0);
 			if (!(error_code & 2) && cow) {
-#ifdef ARCH_ARM
-#warning ARM9 software emulated PTE_xxx
-				perm &= ~PTE_W;
-#else
 				ptep_unset_s_write(&perm);
-#endif
 				may_copy = 0;
 			}
 		}

@@ -66,12 +66,6 @@ struct mm_struct {
 	rb_tree *mmap_tree;
 	struct vma_struct *mmap_cache;
 	pgd_t *pgdir;
-#ifdef ARCH_ARM
-	//ARM PDT is 16K alignment
-	//but our allocator do not support 
-	//this sort of allocation
-	pgd_t *pgdir_alloc_addr;
-#endif
 	int map_count;
 	atomic_t mm_count;
 	int locked_by;

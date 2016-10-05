@@ -84,19 +84,10 @@ pte_t *get_pte(pgd_t * pgdir, uintptr_t la, bool create)
 		set_page_ref(page, 1);
 		uintptr_t pa = page2pa(page);
 		memset(KADDR(pa), 0, PGSIZE);
-/*SZY comments: should we remove all ARM branch ?*/
-#ifdef ARCH_ARM
-		pdep_map(pmdp, pa);
-#else
 		ptep_map(pmdp, pa);
-#endif
-#ifndef ARCH_ARM
 		ptep_set_u_write(pmdp);
 		ptep_set_accessed(pmdp);
 		ptep_set_dirty(pmdp);
-#else
-#warning ARM9 PDE does not have access field
-#endif
 	}
 	return &((pte_t *) KADDR(PMD_ADDR(*pmdp)))[PTX(la)];
 #endif /* PTXSHIFT == PMXSHIFT */
@@ -401,10 +392,5 @@ copy_range(pgd_t * to, pgd_t * from, uintptr_t start, uintptr_t end, bool share)
 		}
 		start += PGSIZE;
 	} while (start != 0 && start < end);
-#ifdef ARCH_ARM
-	/* we have modified the PTE of the original
-	 * process, so invalidate TLB */
-	tlb_invalidate_all();
-#endif
 	return 0;
 }
