@@ -18,7 +18,7 @@ INITIAL_DIR := _initial
 USER_APPLIST:= pwd cat sh ls cp echo num #link mkdir rename unlink lsmod insmod rmmod mount umount
 ifneq ($(UCORE_TEST),)
 USER_TESTLIST := $(basename $(wildcard tests/*.c))
-USER_TESTLIST += $(basename $(wildcard tests/arch/$(ARCH)/*.c))
+USER_TESTLIST += $(basename $(wildcard tests/*.c))
 endif
 
 USER_APP_BINS:= $(addprefix $(BIN)/, $(USER_APPLIST))

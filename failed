@@ -1,0 +1,20 @@
+mips-sde-elf-ld -n -G 0 -static -EL -nostdlib -nostdlib -n -G 0 -static -T 
+/home/zzx/code/ucore-clean/src/kern-ucore/ucore.ld 
+/home/zzx/code/ucore-clean/obj/kernel/kernel-builtin.o 
+/home/zzx/code/ucore-clean/obj/kernel/switch.o 
+/home/zzx/code/ucore-clean/obj/kernel/entry.o 
+/home/zzx/code/ucore-clean/obj/kernel/exception.o 
+/home/zzx/code/ucore-clean/obj/kernel/vectors.o 
+/home/zzx/code/ucore-clean/obj/kernel/initrd.img.o 
+-o /home/zzx/code/ucore-clean/obj/kernel/ucore-kernel-initrd
+
+mips-sde-elf-ld -n -G 0 -static -EL -nostdlib -nostdlib -n -G 0 -static -T 
+/home/zzx/code/simplified-ucore/src/kern-ucore/arch/mips/ucore.ld 
+/home/zzx/code/simplified-ucore/obj/kernel/kernel-builtin.o 
+/home/zzx/code/simplified-ucore/obj/kernel/init/entry.o 
+/home/zzx/code/simplified-ucore/obj/kernel/trap/exception.o 
+/home/zzx/code/simplified-ucore/obj/kernel/trap/vectors.o 
+/home/zzx/code/simplified-ucore/obj/kernel/process/switch.o 
+/home/zzx/code/simplified-ucore/obj/kernel/process/entry.o 
+/home/zzx/code/simplified-ucore/obj/kernel/initrd.img.o 
+-o /home/zzx/code/simplified-ucore/obj/kernel/ucore-kernel-initrd

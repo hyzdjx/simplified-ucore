@@ -19,7 +19,15 @@ V      ?= @
 SRCFILES   := $(shell find . '(' '!' -regex '.*/_.*' ')' -and '(' -iname "*.c" -or -iname "*.S" ')' -and -not -regex '\./arch.*' | sed -e 's!\./!!g')
 T_CC_ALL_FLAGS := -Os -I.
 
-include arch/${ARCH}/bootloader.mk
+BOOTSECT   := $(T_OBJ)/loader.bin
+
+all: $(BOOTSECT)
+
+$(BOOTSECT): bootasm.S
+	${V}mkdir $(T_OBJ)
+	$(CC) -fno-builtin -nostdlib  -nostdinc -g  -EL -G0 -fno-delayed-branch -Wa,-O0 -c -o $(T_OBJ)/loader.o $^
+	$(LD) -EL -n -G0 -Ttext 0xbfc00000 -o $(T_OBJ)/loader $(T_OBJ)/loader.o
+	$(OBJCOPY) -O binary  $(T_OBJ)/loader $@
 
 $(T_OBJ):
 	@mkdir $(T_OBJ)

@@ -15,25 +15,16 @@ KTREE_OBJ_ROOT := $(OBJPATH_ROOT)/kernel
 
 export KTREE_OBJ_ROOT
 
-KERN_INCLUDES :=../glue-kern/arch/${ARCH} glue-ucore glue-ucore/libs \
-libs syscall debug driver mm sync schedule process fs \
-fs/vfs fs/pipe fs/sfs fs/devs
-
-ifdef UCONFIG_HAVE_LINUX_DDE_BASE
-KERN_INCLUDES += module/include
-endif
+KERN_INCLUDES := include lib fs fs/vfs fs/pipe fs/sfs fs/devs
 
 TARGET_CFLAGS += $(addprefix -I$(KTREE)/, $(KERN_INCLUDES))
 
 TARGET_CFLAGS += -include $(KCONFIG_AUTOHEADER)
-ifneq ($(UCORE_TEST),)
-TARGET_CFLAGS += -DUNITTEST=$(UCORE_TEST)
-endif
 
 ifneq ($(MAKECMDGOALS),clean)
-include $(KTREE)/arch/$(ARCH)/include.mk
+include $(KTREE)/include.mk
 endif
-TARGET_CFLAGS += $(addprefix -I$(KTREE)/arch/$(ARCH)/, $(ARCH_INLUCDES))
+TARGET_CFLAGS += $(addprefix -I$(KTREE), $(ARCH_INLUCDES))
 TARGET_CFLAGS += $(ARCH_CFLAGS)
 TARGET_LDFLAGS += $(ARCH_LDFLAGS)
 
@@ -47,7 +38,7 @@ all: $(KTREE_OBJ_ROOT) $(KERNEL_BUILTIN_O)
 ifneq ($(UCORE_TEST),)
 	$(Q)touch $(KTREE)/process/proc.c
 endif
-	$(Q)$(MAKE) KERNEL_BUILTIN=$(KERNEL_BUILTIN_O)  -C $(KTREE)/arch/$(ARCH) -f $(KTREE)/arch/$(ARCH)/Makefile.image all
+	$(Q)$(MAKE) KERNEL_BUILTIN=$(KERNEL_BUILTIN_O)  -C $(KTREE) -f $(KTREE)/Makefile.image all
 
 $(KERNEL_BUILTIN_O): subdir
 	@echo Building uCore Kernel for $(UCONFIG_ARCH)
@@ -59,7 +50,7 @@ $(KTREE_OBJ_ROOT):
 clean:
 	$(Q)rm -f .builtinlist.tmp
 	$(Q)rm -rf $(KTREE_OBJ_ROOT)
-	$(Q)$(MAKE)  -C $(KTREE)/arch/$(ARCH) -f $(KTREE)/arch/$(ARCH)/Makefile.image clean
+	$(Q)$(MAKE)  -C $(KTREE)/ -f $(KTREE)/Makefile.image clean
 
 subdir: $(KTREE_OBJ_ROOT) $(KCONFIG_AUTOHEADER) $(KCONFIG_AUTOCONFIG) FORCE
 	$(Q)rm -f .builtinlist.tmp
