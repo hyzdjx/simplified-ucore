@@ -1,18 +1,26 @@
 .PHONY: all clean
 
-ULIB_OBJ_ROOT := $(OBJPATH_ROOT)/libs-user-ucore
+ULIB_OBJ_ROOT := $(OBJPATH_ROOT)/user
 ULIB_A := $(ULIB_OBJ_ROOT)/ulib.a
 
-TARGET_CFLAGS := -I. -Icommon -Iarch/$(ARCH) -nostdinc -nostdlib -fno-builtin
+TARGET_CFLAGS := -I. -Iinclude -Ilib -nostdinc -nostdlib -fno-builtin
 obj-y := dir.o file.o malloc.o panic.o signal.o spipe.o \
 				stdio.o string.o syscall.o thread.o ulib.o umain.o mod.o mount.o
-obj-y += common/hash.o common/rand.o common/printfmt.o \
-				common/string.o
+obj-y += lib/hash.o lib/rand.o lib/printfmt.o lib/string.o
 
-include arch/$(ARCH)/include.mk
+ifeq  ($(ON_FPGA), y)
+MACH_DEF := -DMACH_FPGA
+else
+MACH_DEF := -DMACH_QEMU
+endif
 
-obj-y += $(addprefix arch/$(ARCH)/, $(ARCH_OBJS))
-obj-initobj += $(addprefix arch/$(ARCH)/, $(ARCH_INITCODE_OBJ))
+ARCH_CFLAGS := -mips1 -fno-builtin -nostdlib  -nostdinc -g  -EL -G0 -Wformat -O0 -mno-float $(MACH_DEF)
+ARCH_LDFLAGS := 
+ARCH_OBJS := syscall.o initcode.o intr.o clone.o udivmod.o udivmodsi4.o divmod.o
+ARCH_INITCODE_OBJ := initcode.o
+
+obj-y += $(ARCH_OBJS)
+obj-initobj += $(ARCH_INITCODE_OBJ)
 TARGET_CFLAGS += $(ARCH_CFLAGS)
 TARGET_LDFLAGS += $(ARCH_LDFLAGS)
 
@@ -31,8 +39,8 @@ $(ULIB_OBJ_ROOT)/%.o: %.S | $(ULIB_OBJ_ROOT)
 	$(TARGET_CC) -D__ASSEMBLY__ $(TARGET_CFLAGS) -c -o $@ $<
 
 $(ULIB_OBJ_ROOT):
-	@mkdir -p $(ULIB_OBJ_ROOT)/common
-	@mkdir -p $(ULIB_OBJ_ROOT)/arch/$(ARCH)
+	@mkdir -p $(ULIB_OBJ_ROOT)/lib
+	@mkdir -p $(ULIB_OBJ_ROOT)
 
 clean:
 	find . -name \*.o -exec rm -f {} \;

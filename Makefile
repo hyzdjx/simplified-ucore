@@ -102,12 +102,12 @@ kernel: $(OBJPATH_ROOT) $(KCONFIG_AUTOHEADER) $(KCONFIG_AUTOCONFIG) $(SFSIMG_LIN
 	$(Q)$(MAKE)  -C $(KTREE) -f $(KTREE)/Makefile.build
 
 userlib: $(OBJPATH_ROOT) $(KCONFIG_AUTOCONFIG)
-	$(Q)$(MAKE) -f $(TOPDIR)/src/libs-user-ucore/Makefile -C $(TOPDIR)/src/libs-user-ucore  all
+	$(Q)$(MAKE) -f $(TOPDIR)/user/Makefile -C $(TOPDIR)/user  all
 
 define re-user-app
 $1: $(BUILD_DIR) $(addsuffix .o,$1) $(USER_LIB)
 	@echo LINK $$@
-	sed 's/$$$$FILE/$(notdir $1)/g' src/user-ucore/tools/piggy.S.in > $(BIN)/piggy.S
+	sed 's/$$$$FILE/$(notdir $1)/g' user/user-ucore/tools/piggy.S.in > $(BIN)/piggy.S
 	$(CROSS_COMPILE)as $(BIN)/piggy.S -o $$@.piggy.o
 	echo "-------resize bin---------"
 endef
@@ -115,12 +115,12 @@ endef
 $(foreach bdir,$(USER_APP_BINS),$(eval $(call re-user-app,$(bdir))))
 
 userapp: $(OBJPATH_ROOT) $(KCONFIG_AUTOCONFIG)
-	$(Q)$(MAKE) -f $(TOPDIR)/src/user-ucore/Makefile -C $(TOPDIR)/src/user-ucore  all
+	$(Q)$(MAKE) -f $(TOPDIR)/user/user-ucore/Makefile -C $(TOPDIR)/user/user-ucore  all
 
 ## TOOLS 
 
 ifdef UCONFIG_HAVE_SFS
-TOOLS_MKSFS_DIR := $(TOPDIR)/src/ht-mksfs
+TOOLS_MKSFS_DIR := $(TOPDIR)/tool
 TOOLS_MKSFS := $(OBJPATH_ROOT)/mksfs
 $(TOOLS_MKSFS): | $(OBJPATH_ROOT)
 	$(Q)$(MAKE) CC=$(HOSTCC) -f $(TOOLS_MKSFS_DIR)/Makefile -C $(TOOLS_MKSFS_DIR) all
@@ -150,20 +150,20 @@ else
 #do nothing
 endif
 
-	@cp -r $(OBJPATH_ROOT)/user-ucore/bin $(TMPSFS)
+	@cp -r $(OBJPATH_ROOT)/user/bin $(TMPSFS)
 ifneq ($(UCORE_TEST),)
-	@cp -r $(OBJPATH_ROOT)/user-ucore/testbin $(TMPSFS)
+	@cp -r $(OBJPATH_ROOT)/user/testbin $(TMPSFS)
 endif
-	@$(Q)$(MAKE) -f $(TOPDIR)/src/user-ucore/Makefile -C $(TOPDIR)/src/user-ucore initial_dir
+	@$(Q)$(MAKE) -f $(TOPDIR)/user/user-ucore/Makefile -C $(TOPDIR)/user/user-ucore initial_dir
 	@if [ $(ARCH) = "mips" ]; \
 	then \
 		echo " mips"; \
-		cp -r $(TOPDIR)/src/user-ucore/_initial/hello.txt $(TMPSFS); \
+		cp -r $(TOPDIR)/user/user-ucore/_initial/hello.txt $(TMPSFS); \
 		rm -f $@; \
 		dd if=/dev/zero of=$@ count=2400; \
 	else \
 		echo -n $(ARCH)." not mips"; \
-		cp -r $(TOPDIR)/src/user-ucore/_initial/* $(TMPSFS); \
+		cp -r $(TOPDIR)/user/user-ucore/_initial/* $(TMPSFS); \
 		rm -f $@; \
 		dd if=/dev/zero of=$@ bs=256K count=$(UCONFIG_SFS_IMAGE_SIZE); \
 	fi
@@ -185,8 +185,8 @@ clean:
 	$(Q)rm -f $(SFSIMG_FILE)
 	$(Q)rm -rf $(OBJPATH_ROOT)
 	$(Q)$(MAKE) -C $(KTREE) -f Makefile.build clean
-	$(Q)$(MAKE) -f $(TOPDIR)/src/libs-user-ucore/Makefile -C $(TOPDIR)/src/libs-user-ucore  clean
-	$(Q)$(MAKE) -f $(TOPDIR)/src/user-ucore/Makefile -C $(TOPDIR)/src/user-ucore  clean
+	$(Q)$(MAKE) -f $(TOPDIR)/user/Makefile -C $(TOPDIR)/user  clean
+	$(Q)$(MAKE) -f $(TOPDIR)/user/user-ucore/Makefile -C $(TOPDIR)/user/user-ucore  clean
 
 indent:
 	$(Q)find $(TOPDIR)/src -name *.c -or -name *.h | grep -vf $(TOPDIR)/misc/indent-whitelist | xargs $(TOPDIR)/misc/Lindent
