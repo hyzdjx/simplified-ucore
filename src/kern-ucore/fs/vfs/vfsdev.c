@@ -14,7 +14,7 @@
 #include <unistd.h>
 #include <error.h>
 #include <assert.h>
-#include <kio.h>
+#include <mips_io.h>
 
 /*
  * Structure for a single named device.

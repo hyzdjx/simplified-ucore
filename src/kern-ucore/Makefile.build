@@ -19,8 +19,6 @@ KERN_INCLUDES := include lib fs fs/vfs fs/pipe fs/sfs fs/devs
 
 TARGET_CFLAGS += $(addprefix -I$(KTREE)/, $(KERN_INCLUDES))
 
-TARGET_CFLAGS += -include $(KCONFIG_AUTOHEADER)
-
 ifneq ($(MAKECMDGOALS),clean)
 include $(KTREE)/include.mk
 endif
@@ -52,7 +50,7 @@ clean:
 	$(Q)rm -rf $(KTREE_OBJ_ROOT)
 	$(Q)$(MAKE)  -C $(KTREE)/ -f $(KTREE)/Makefile.image clean
 
-subdir: $(KTREE_OBJ_ROOT) $(KCONFIG_AUTOHEADER) $(KCONFIG_AUTOCONFIG) FORCE
+subdir: $(KTREE_OBJ_ROOT) $(KCONFIG_AUTOCONFIG) FORCE
 	$(Q)rm -f .builtinlist.tmp
 	$(Q)touch .builtinlist.tmp
 ifneq ($(UCORE_TEST),)

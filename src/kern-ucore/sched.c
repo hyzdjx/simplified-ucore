@@ -6,7 +6,7 @@
 #include <assert.h>
 #include <sched_RR.h>
 #include <sched_MLFQ.h>
-#include <kio.h>
+#include <mips_io.h>
 #include <mp.h>
 #include <trap.h>
 

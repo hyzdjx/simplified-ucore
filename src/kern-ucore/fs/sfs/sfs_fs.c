@@ -12,7 +12,7 @@
 #include <bitmap.h>
 #include <error.h>
 #include <assert.h>
-#include <kio.h>
+#include <mips_io.h>
 
 /*
  * Sync routine. This is what gets invoked if you do FS_SYNC on the

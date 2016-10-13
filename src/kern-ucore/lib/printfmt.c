@@ -1,4 +1,4 @@
-#include <defs.h>
+#include <types.h>
 #include <arch.h>
 #include <error.h>
 #include <stdio.h>
@@ -17,64 +17,50 @@
 
 static const char *const error_string[MAXERROR + 1] = {
 	[0] NULL,
-	[E_UNSPECIFIED] "unspecified error",
-	[E_BAD_PROC] "bad process",
-	[E_INVAL] "invalid parameter",
-	[E_NO_MEM] "out of memory",
-	[E_NO_FREE_PROC] "out of processes",
-	[E_FAULT] "segmentation fault",
-	[E_INVAL_ELF] "invalid elf file",
-	[E_KILLED] "process is killed",
-	[E_PANIC] "panic failure",
-	[E_NO_DEV] "no such device",
-	[E_NA_DEV] "device not available",
-	[E_BUSY] "device/file is busy",
-	[E_NOENT] "no such file or directory",
-	[E_ISDIR] "is a directory",
-	[E_NOTDIR] "not a directory",
-	[E_XDEV] "cross device link",
-	[E_UNIMP] "unimplemented feature",
-	[E_SEEK] "illegal seek",
-	[E_MAX_OPEN] "too many files are open",
-	[E_EXISTS] "file or directory already exists",
-	[E_NOTEMPTY] "directory is not empty",
+	[E_PERM] "Operation not permitted",
+	[E_NOENT] "No such file or directory",
+	[E_SRCH] "No such process",
+	[E_INTR] "Interrupted system call",
+	[E_IO] "I/O error",
+	[E_NXIO] "No such device or address",
+	[E_2BIG] "Argument list too long",
+	[E_NOEXEC] "Exec format error",
+	[E_BADF] "Bad file number",
+	[E_CHILD] "No child processes",
+	[E_AGAIN] "Try again",
+	[E_NOMEM] "Out of memory",
+	[E_ACCES] "Permission denied",
+	[E_FAULT] "Bad address",
+	[E_NOTBLK] "Block device required",
+	[E_BUSY] "Device or resource busy",
+	[E_EXIST] "File exists",
+	[E_XDEV] "Cross-device link",
+	[E_NODEV] "No such device",
+	[E_NOTDIR] "Not a directory",
+	[E_ISDIR] "Is a directory",
+	[E_INVAL] "Invalid argument",
+	[E_NFILE] "File table overflow",
+	[E_MFILE] "Too many open files",
+	[E_NOTTY] "Not a typewriter",
+	[E_TXTBSY] "Text file busy",
+	[E_FBIG] "File too large",
+	[E_NOSPC] "No space left on device",
+	[E_SPIPE] "Illegal seek",
+	[E_ROFS] "Read-only file system",
+	[E_MLINK] "Too many links",
+	[E_PIPE] "Broken pipe",
+	[E_DOM] "Math argument out of domain of func",
+	[E_RANGE] "Math result not representable",
+	[E_UNIMP] "Unimplemented Feature",
+	[E_PANIC] "Panic Failure",
+	[E_KILLED] "Process is killed",
+	[E_UNSPECIFIED] "Unspecified or unknown problem",
 };
-
-/* *
- * getuint - get an unsigned int of various possible sizes from a varargs list
- * @ap:         a varargs list pointer
- * @lflag:      determines the size of the vararg that @ap points to
- * */
-static unsigned long long getuint(va_list * ap, int lflag)
-{
-	if (lflag >= 2) {
-		return va_arg(*ap, unsigned long long);
-	} else if (lflag) {
-		return va_arg(*ap, unsigned long);
-	} else {
-		return va_arg(*ap, unsigned int);
-	}
-}
-
-/* *
- * getint - same as getuint but signed, we can't use getuint because of sign extension
- * @ap:         a varargs list pointer
- * @lflag:      determines the size of the vararg that @ap points to
- * */
-static long long getint(va_list * ap, int lflag)
-{
-	if (lflag >= 2) {
-		return va_arg(*ap, long long);
-	} else if (lflag) {
-		return va_arg(*ap, long);
-	} else {
-		return va_arg(*ap, int);
-	}
-}
 
 /* *
  * printnum - print a number (base <= 16) in reverse order
  * @putch:      specified putch function, print a single character
+ * @fd:         file descriptor
  * @putdat:     used by @putch function
  * @num:        the number will be printed
  * @base:       base for print, must be in [1, 16]
@@ -83,22 +69,21 @@ static long long getint(va_list * ap, int lflag)
  * */
 static void
 printnum(void (*putch) (int, void *, int), int fd, void *putdat,
-	 unsigned int num, unsigned int base, int width, int padc)
+	 unsigned long long num, unsigned base, int width, int padc)
 {
-	while (1) ;
-	unsigned int result = num;
-	unsigned int mod = 0;
-	if (base == 10) {
-		unsigned int t = __divu10(result);
-		mod = result - __mulu10(t);
-		result = t;
-	} else if (base == 8) {
-		mod = result & 0x7;
-		result = result >> 3;
-	} else {
-		mod = result & 0xF;
-		result = result >> 4;
-	}
+	unsigned long long result = num;
+	unsigned mod = 0;//do_div(result, base);
+	if(base == 10){
+      		unsigned int t = __divu10(result);
+      		mod = result - __mulu10(t);
+      		result = t;
+   	}else if(base == 8){
+      	mod = result & 0x7;
+      	result = result >> 3;
+    	}else{
+      		mod = result & 0xF;
+      		result = result >> 4;
+    	}
 
 	// first recursively print all preceding (more significant) digits
 	if (num >= base) {
@@ -112,11 +97,79 @@ printnum(void (*putch) (int, void *, int), int fd, void *putdat,
 	putch("0123456789abcdef"[mod], putdat, fd);
 }
 
+#define GETINT_MACRO
+
+/* *
+ * getuint - get an unsigned int of various possible sizes from a varargs list
+ * @ap:         a varargs list pointer
+ * @lflag:      determines the size of the vararg that @ap points to
+ * */
+#ifdef GETINT_MACRO
+#define getuint(ap, lflag)												\
+	((lflag >= 2) ? (unsigned long long)va_arg(ap, unsigned long long) : \
+	 (lflag)      ? (unsigned long long)va_arg(ap, unsigned long) :		\
+	 (unsigned long long)va_arg(ap, unsigned int)						\
+	)
+#else
+static unsigned long long getuint(va_list ap, int lflag)
+{
+	if (lflag >= 2) {
+		return va_arg(ap, unsigned long long);
+	} else if (lflag) {
+		return va_arg(ap, unsigned long);
+	} else {
+		return va_arg(ap, unsigned int);
+	}
+}
+#endif
+
+/* *
+ * getint - same as getuint but signed, we can't use getuint because of sign extension
+ * @ap:         a varargs list pointer
+ * @lflag:      determines the size of the vararg that @ap points to
+ * */
+#ifdef GETINT_MACRO
+#define getint(ap, lflag)												\
+	((lflag >= 2) ? (long long)va_arg(ap, long long) :					\
+	 (lflag)      ? (long long)va_arg(ap, long) :						\
+	 (long long)va_arg(ap, int)											\
+	)
+#else
+static long long getint(va_list ap, int lflag)
+{
+	if (lflag >= 2) {
+		return va_arg(ap, long long);
+	} else if (lflag) {
+		return va_arg(ap, long);
+	} else {
+		return va_arg(ap, int);
+	}
+}
+#endif
+
+/* *
+ * printfmt - format a string and print it by using putch
+ * @putch:      specified putch function, print a single character
+ * @fd:         file descriptor
+ * @putdat:     used by @putch function
+ * @fmt:        the format string to use
+ * */
+void
+printfmt(void (*putch) (int, void *, int), int fd, void *putdat,
+	 const char *fmt, ...)
+{
+	va_list ap;
+
+	va_start(ap, fmt);
+	vprintfmt(putch, fd, putdat, fmt, ap);
+	va_end(ap);
+}
+
 /* *
  * vprintfmt - format a string and print it by using putch, it's called with a va_list
  * instead of a variable number of arguments
- * @fd:         file descriptor
  * @putch:      specified putch function, print a single character
+ * @fd:         file descriptor
  * @putdat:     used by @putch function
  * @fmt:        the format string to use
  * @ap:         arguments for the format string
@@ -239,13 +292,26 @@ process_precision:
 
 			// (signed) decimal
 		case 'd':
-			num = getint(&ap, lflag);
+			num = getint(ap, lflag);
 			if ((long long)num < 0) {
 				putch('-', putdat, fd);
 				num = -(long long)num;
 			}
 			base = 10;
 			goto number;
+
+			// unsigned decimal
+		case 'u':
+			num = getuint(ap, lflag);
+			base = 10;
+			goto number;
+
+			// (unsigned) octal
+		case 'o':
+			num = getuint(ap, lflag);
+			base = 8;
+			goto number;
+
 			// pointer
 		case 'p':
 			putch('0', putdat, fd);
@@ -257,7 +323,7 @@ process_precision:
 
 			// (unsigned) hexadecimal
 		case 'x':
-			num = getuint(&ap, lflag);
+			num = getuint(ap, lflag);
 			base = 16;
 number:
 			printnum(putch, fd, putdat, num, base, width, padc);
@@ -276,24 +342,6 @@ number:
 			break;
 		}
 	}
-}
-
-/* *
- * printfmt - format a string and print it by using putch
- * @putch:      specified putch function, print a single character
- * @fd:         file descriptor
- * @putdat:     used by @putch function
- * @fmt:        the format string to use
- * */
-void
-printfmt(void (*putch) (int, void *, int), int fd, void *putdat,
-	 const char *fmt, ...)
-{
-	va_list ap;
-
-	va_start(ap, fmt);
-	vprintfmt(putch, fd, putdat, fmt, ap);
-	va_end(ap);
 }
 
 /* sprintbuf is used to save enough information of a buffer */
@@ -317,22 +365,6 @@ static void sprintputch(int ch, struct sprintbuf *b)
 }
 
 /* *
- * snprintf - format a string and place it in a buffer
- * @str:        the buffer to place the result into
- * @size:       the size of buffer, including the trailing null space
- * @fmt:        the format string to use
- * */
-int snprintf(char *str, size_t size, const char *fmt, ...)
-{
-	va_list ap;
-	int cnt;
-	va_start(ap, fmt);
-	cnt = vsnprintf(str, size, fmt, ap);
-	va_end(ap);
-	return cnt;
-}
-
-/* *
  * vsnprintf - format a string and place it in a buffer, it's called with a va_list
  * instead of a variable number of arguments
  * @str:        the buffer to place the result into
@@ -346,7 +378,7 @@ int snprintf(char *str, size_t size, const char *fmt, ...)
  * Call this function if you are already dealing with a va_list.
  * Or you probably want snprintf() instead.
  * */
-int vsnprintf(char *str, size_t size, const char *fmt, va_list ap)
+static int ucore_vsnprintf(char *str, size_t size, const char *fmt, va_list ap)
 {
 	struct sprintbuf b = { str, str + size - 1, 0 };
 	if (str == NULL || b.buf > b.ebuf) {
@@ -357,4 +389,20 @@ int vsnprintf(char *str, size_t size, const char *fmt, va_list ap)
 	// null terminate the buffer
 	*b.buf = '\0';
 	return b.cnt;
+}
+
+/* *
+ * snprintf - format a string and place it in a buffer
+ * @str:        the buffer to place the result into
+ * @size:       the size of buffer, including the trailing null space
+ * @fmt:        the format string to use
+ * */
+int snprintf(char *str, size_t size, const char *fmt, ...)
+{
+	va_list ap;
+	int cnt;
+	va_start(ap, fmt);
+	cnt = ucore_vsnprintf(str, size, fmt, ap);
+	va_end(ap);
+	return cnt;
 }

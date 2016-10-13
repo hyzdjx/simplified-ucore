@@ -6,8 +6,6 @@
 TOPDIR=$(shell pwd)
 Q :=@
 
-UCONFIG_PATH = $(TOPDIR)/config
-
 KTREE = $(TOPDIR)/src/kern-ucore
 ifndef O
 OBJPATH_ROOT := $(TOPDIR)/obj
@@ -16,8 +14,7 @@ OBJPATH_ROOT := $(abspath $(O))
 endif
 export TOPDIR KTREE OBJPATH_ROOT
 
-KCONFIG_AUTOCONFIG=$(UCONFIG_PATH)/auto.conf
-KCONFIG_AUTOHEADER=$(UCONFIG_PATH)/autoconf.h
+KCONFIG_AUTOCONFIG=$(TOPDIR)/Makefile.config
 #User Path
 USER_OBJ_ROOT := $(OBJPATH_ROOT)/user-ucore
 BIN := $(USER_OBJ_ROOT)/bin
@@ -39,7 +36,7 @@ CROSS_COMPILE ?= $(UCONFIG_CROSS_COMPILE)
 
 export CONFIG_SHELL quiet Q KBUILD_VERBOSE
 export ARCH CROSS_COMPILE
-export KCONFIG_AUTOHEADER KCONFIG_AUTOCONFIG
+export KCONFIG_AUTOCONFIG
 
 
 TARGET_CC := $(CROSS_COMPILE)gcc
@@ -93,12 +90,12 @@ export HOSTCFLAGS
 
 PHONY+= clean all sfsimg
 
-PHONY+= $(OBJPATH_ROOT) $(KCONFIG_AUTOHEADER) $(KCONFIG_AUTOCONFIG)
+PHONY+= $(OBJPATH_ROOT) $(KCONFIG_AUTOCONFIG)
 all: sfsimg kernel
 
 PHONY += kernel userlib userapp
 
-kernel: $(OBJPATH_ROOT) $(KCONFIG_AUTOHEADER) $(KCONFIG_AUTOCONFIG) $(SFSIMG_LINK)
+kernel: $(OBJPATH_ROOT) $(KCONFIG_AUTOCONFIG) $(SFSIMG_LINK)
 	$(Q)$(MAKE)  -C $(KTREE) -f $(KTREE)/Makefile.build
 
 userlib: $(OBJPATH_ROOT) $(KCONFIG_AUTOCONFIG)
@@ -178,7 +175,6 @@ $(OBJPATH_ROOT):
 $(CONFIG_DIR):
 	-mkdir -p $@
 
-#	$(Q)rm -f $(KCONFIG_AUTOCONFIG) $(KCONFIG_AUTOHEADER)
 clean:
 	@echo CLEAN ALL
 	$(Q)rm -f cscope.*

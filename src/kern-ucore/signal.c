@@ -6,7 +6,7 @@
 #include <string.h>
 #include <vmm.h>
 #include <sched.h>
-#include <kio.h>
+#include <mips_io.h>
 #include <mp.h>
 
 //#define SIGQUEUE

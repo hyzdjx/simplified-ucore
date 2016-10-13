@@ -17,7 +17,7 @@
 #include <vfs.h>
 #include <sysfile.h>
 #include <mbox.h>
-#include <kio.h>
+#include <mips_io.h>
 #include <stdio.h>
 #include <mp.h>
 #include <resource.h>
@@ -2006,7 +2006,7 @@ int init_new_context(struct proc_struct *proc, struct elfhdr *elf,
 
 int ucore_kernel_thread(int (*fn) (void *), void *arg, uint32_t clone_flags)
 {
-	kernel_thread(fn, arg, clone_flags);
+	return kernel_thread(fn, arg, clone_flags);
 }
 
 // kernel_thread - create a kernel thread using "fn" function

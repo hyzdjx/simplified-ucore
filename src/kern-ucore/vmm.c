@@ -9,7 +9,7 @@
 #include <shmem.h>
 #include <proc.h>
 #include <sem.h>
-#include <kio.h>
+#include <mips_io.h>
 
 #include <file.h>
 #include <proc.h>

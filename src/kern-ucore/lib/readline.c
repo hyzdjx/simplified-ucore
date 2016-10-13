@@ -1,5 +1,5 @@
 #include <glue_kio.h>
-#include <kio.h>
+#include <mips_io.h>
 
 #define BUFSIZE 1024
 static char buf[BUFSIZE];

@@ -7,7 +7,7 @@
 #include <inode.h>
 #include <error.h>
 #include <assert.h>
-#include <kio.h>
+#include <mips_io.h>
 
 /* *
  * __alloc_inode - alloc a inode structure and initialize in_type
